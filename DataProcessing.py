@@ -1,6 +1,5 @@
 import tmdbsimple as tmdb
 import csv
-import nltk
 from stanfordcorenlp import StanfordCoreNLP
 from nltk import tokenize
 from nltk.corpus import stopwords
@@ -8,34 +7,31 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.corpus import wordnet
 from SPARQLWrapper import SPARQLWrapper, XML, JSON
 import rdflib
-from tempfile import mktemp
 from rdflib import ConjunctiveGraph, Namespace, Literal
 from rdflib.store import NO_STORE, VALID_STORE
 
-#Path do stanford CoreNLP é preciso fazer o Download deste primeiro
+#Path of stanford CoreNLP, Previous download required
 local_corenlp_path = 'C:/Users/Luis/PycharmProjects/stanford-corenlp-full-2018-10-05'
 
-tmdb.API_KEY = '9c18977580127eecdc81970dc3f3ce1f'
+tmdb.API_KEY = 'XYZ'
 
-#Path do léxico e definição das stopwords
+#Lexicon and stopwords paths defenition
 stops = set(stopwords.words("english"))
 anew = 'C:/Users/Luis/PycharmProjects/WS/nrc_lex.csv'
 lmtzr = WordNetLemmatizer()
 nlp = StanfordCoreNLP(local_corenlp_path)
 
-# Aceita a sinopse como String e devolve sentimento e emoção associada com recurso ao léxico NRC
+#analyzefile accepts a string corresponding to a movie synopsis and matches its keywords with its values in NRC lexicon
+#for sentiment and emotion definition. It performs an average of the values found to assign both emotions and sentiment.
 def analyzefile(fulltext):
-    print(fulltext)
 
-    #tokenização das palavras
+    #sentence tokenization of the full text
     sentences = tokenize.sent_tokenize(fulltext)
 
-    #Análise frase a frase
+    #Emotion and sentiment analysis of each sentence
     for s in sentences:
 
-        print("S:" + s)
-
-        #Variaveis auxiliares
+        #Auxliliary variables
         all_words = []
         found_words = []
         pos_list = []
@@ -48,21 +44,18 @@ def analyzefile(fulltext):
 
         full_emotion = ''
 
-        #Passar para letra pequena
+        #Passing sentence to lowercase
         words = nlp.pos_tag(s.lower())
 
-        #print(words)
-
+        #for each word in each sentence performs the matching with nrc lexicon
         for index, p in enumerate(words):
-            #Ignorar pontuação
-            #print(index)
-            #print(p)
+            #Ignoring stopwords
             w = p[0]
             pos = p[1]
             if w in stops or not w.isalpha():
                 continue
 
-            #Procurar pela negação da palavra
+            #Chech if word is in negation form by analysing previous word
             j = index-1
             neg = False
             while j >= 0 and j >= index-3:
@@ -71,7 +64,7 @@ def analyzefile(fulltext):
                     break
                 j -= 1
 
-            #lemmatização e PoS tagging
+            #lemmatization and PoS tagging
             if pos[0] == 'N' or pos[0] == 'V':
                 lemma = lmtzr.lemmatize(w, pos=pos[0].lower())
             else:
@@ -79,14 +72,13 @@ def analyzefile(fulltext):
 
             all_words.append(lemma)
 
-            # Procura no Léxico NRC, existente no ficheiro nrc_lex.csv
+            # Search in NRC lexicon, corresponding to the file nrc_lex.csv
             with open(anew) as csvfile:
                 reader = csv.DictReader(csvfile, delimiter = ';')
                 for row in reader:
                     if row['Word'].casefold() == lemma.casefold():
-                        #print(row['Word'].casefold())
+                        #negated words are passed to the opposite values of the lexicon
                         if neg:
-                            #print("Negation Found")
                             if row['Positive'] == str(1):
                                 neg_list.append(lemma)
                             else:
@@ -94,18 +86,16 @@ def analyzefile(fulltext):
                             found_words.append("neg-"+lemma)
                         else:
                             if row['Positive'] == str(0) and row['Negative'] == str(0):
-                                #print("Neutral Found")
                                 neut_list.append(lemma)
                             if row['Positive'] == str(1):
-                                #print("Positive Found")
                                 pos_list.append(lemma)
                             if row['Negative'] == str(1):
-                                #print("Negative Found")
                                 neg_list.append(lemma)
                             found_words.append(lemma)
 
                         if row['Positive'] == str(0) and row['Negative'] == str(0):
                             continue
+                        #Emotion assignment
                         if row['Anger'] == str(1):
                             emo_list[0] = emo_list[0] + 1
                         if row['Anticipation'] == str(1):
@@ -123,7 +113,7 @@ def analyzefile(fulltext):
                         if row['Trust'] == str(1):
                             emo_list[7] = emo_list[7] + 1
 
-        if len(found_words) == 0:  # no words found in ANEW for this sentence
+        if len(found_words) == 0:  # no words found in NRC for this sentence, neutral sentiment and emotion assigned
             print("No occurence")
             noemo = 'Neutral'
             nosent = 'Neutral'
@@ -137,7 +127,7 @@ def analyzefile(fulltext):
             print(len(neg_list))
 
 
-
+            #majority sentiment is assigned
             if (pos > neg) and (pos > neut):
                 total_pos = total_pos + 1
             elif (neut > pos) and (neut > neg):
@@ -145,7 +135,7 @@ def analyzefile(fulltext):
             else:
                 total_neg = total_neg + 1
 
-            #procurar pela emocao
+            #search for the most common emotion
             em = emo_list.index(max(emo_list))
             emotion = ''
             sentiment = ''
@@ -182,6 +172,7 @@ def analyzefile(fulltext):
 
     return sentiment, full_emotion
 
+#readFile reads datafile with movie synopsis and assigns emotion and sentiment. Joins all data in new file
 def readFile():
     filepath = 'C:/Users/Luis/PycharmProjects/WS/newData.csv'
 
@@ -197,6 +188,7 @@ def readFile():
 
 #--------------------------------------------------------------------
 
+#Auxiliart function for movie data extraction, currently not used
 def movieInformation(movie_title):
 
     search = tmdb.Search()
@@ -232,6 +224,7 @@ def movieInformation(movie_title):
     print(tot_genres)
 
 
+#Fuction that accepts a string corresponding to film name, performs dbpedia query for finding movie information
 def dbpediaQuery(SearchTerm):
 
     inicialquery = """PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -259,6 +252,7 @@ def dbpediaQuery(SearchTerm):
 
     return retval
 
+#Creates graph for storing movie data, files created in directory MyStore
 def createStore():
     graph = ConjunctiveGraph('Sleepycat')
 
@@ -271,6 +265,7 @@ def createStore():
 
     graph.close()
 
+#Updates created graph with our movie information
 def populateStore():
 
     onyx = rdflib.Graph()
@@ -282,22 +277,19 @@ def populateStore():
     for s, p, o in onyx:
         print(s)
 
-    # for s, p, o in marl:
-    # print(s, p, o)
-
     graph = ConjunctiveGraph('Sleepycat')
     graph.open("C:/Users/Luis/PycharmProjects/WS/MyStore", create=False)
-    #rdflib = Namespace('http://rdflib.net/test/')
-    #graph.bind('test', 'http://rdflib.net/test/')
-    #graph.add((rdflib['pic:1'], rdflib.name, Literal('Jane & Bob')))
-    #graph.add((rdflib['pic:2'], rdflib.name, Literal('Squirrel in Tree')))
     print('Triples still in graph: ', len(graph))
     graph.close()
 
+#semanticSearch accpets a string corresponding to web app search box. It performs a similarity search based on keyword matching
+# of the synonms presented in the query.
 def semanticSearch(inputText):
 
+    #dbpedia sparql initialization
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
 
+    #Aux variables
     posSearch = ['Positive']
     neuSearch = ['Neutral']
     negSearch = ['Negative']
@@ -306,33 +298,32 @@ def semanticSearch(inputText):
 
     emoRet = []
 
+    #sentence lowercased and tokenization
     tokens = inputText.lower()
     tokens = tokens.split(' ')
 
-    #busca por similaridade, vai aos sinonimos de cada token e procura pela semelhança por alguma emoção
+    #Search by similarity, goes to each synonim of each token and searchs by similarity to each emotion
     for token in tokens:
         print(token)
         maxVal = 0
+        #for each synonim found
         for syn in wordnet.synsets(token):
             print(syn)
             for emo in emoSearch:
                 cmpe = wordnet.synsets(emo)
                 aux = cmpe[0].name()
                 aux2 = syn.name()
-                #print(aux)
-                #print(aux2)
                 cmpemo = wordnet.synset(str(aux))
                 cmpemo2 = wordnet.synset(str(aux2))
-                #print(cmpemo)
                 b = cmpemo2.name().split('.')
                 print(b[0])
                 a = cmpemo.wup_similarity(cmpemo2)
 
-                #Em caso de nao ser nada semelhante
+                #In case of not being similar, ignore
                 if a is None:
                     continue
                 else:
-                    #Atualização em procura da emoção com mais semelhança
+                    #Emotion found
                     if a > maxVal:
                         print(a)
                         print(emo)
@@ -343,12 +334,3 @@ def semanticSearch(inputText):
                             emoRet.append(emo)
 
     print(emoRet)
-
-text = "Havana, Cuba, 1979. Flamboyantly gay artist Diego (Jorge Perugorría) attempts to seduce the straight and strait-laced David, an idealistic young communist, and fails dismally. But David conspires to become friends with Diego so he can monitor the artist's subversive life for the state. As Diego and David discuss politics, individuality and personal expression in Castro's Cuba, a genuine friendship develops between the two. But can it last? Strawberry and Chocolate became an instant hit when it was released, and has become a classic of Cuban cinema due to its charming and authentic exploration of a connection between two people under historical circumstances that seem levelled against them."
-
-#analyzefile(text)
-#movieInformation('Toy Story')
-#semanticSearch("Show me movies that provoke me anger")
-readFile()
-#loadOntology()
-#populateStore()

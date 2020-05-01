@@ -1,0 +1,29 @@
+# webemosenti/webproject/catalog/admin.py: 1
+# webemosenti/webproject/catalog/apps.py: 1
+# webemosenti/webproject/catalog/models.py: 1
+# webemosenti/webproject/catalog/tests.py: 1
+# webemosenti/webproject/catalog/urls.py: 1
+# webemosenti/webproject/catalog/views.py: 1,4,5
+# webemosenti/webproject/webproject/urls.py: 25
+# webemosenti/webproject/webproject/wsgi.py: 12
+django == 3.0.5
+
+# webemosenti/DataProcessing.py: 4,5,6,7
+# webemosenti/webproject/catalog/views.py: 8,9,10
+nltk == 3.5
+
+# webemosenti/DataProcessing.py: 11
+# webemosenti/webproject/catalog/views.py: 12
+rdflib == 5.0.0
+
+# webemosenti/DataProcessing.py: 8
+# webemosenti/webproject/catalog/views.py: 11
+sparqlwrapper == 1.8.5
+
+# webemosenti/DataProcessing.py: 3
+# webemosenti/webproject/catalog/views.py: 7
+stanfordcorenlp == 3.9.1.1
+
+# webemosenti/DataProcessing.py: 1
+# webemosenti/webproject/catalog/views.py: 6
+tmdbsimple == 2.2.0

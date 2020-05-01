@@ -13,16 +13,18 @@ from rdflib import ConjunctiveGraph, Namespace
 
 local_corenlp_path = 'C:/Users/Luis/PycharmProjects/stanford-corenlp-full-2018-10-05'
 
-#Path do léxico e definição das stopwords
+#Lexicon and stopword definition
 stops = set(stopwords.words("english"))
 anew = 'C:/Users/Luis/PycharmProjects/WS/nrc_lex.csv'
 lmtzr = WordNetLemmatizer()
 nlp = StanfordCoreNLP(local_corenlp_path)
 
+#render homepage
 def index(request):
     template = loader.get_template('C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/homepage.html')
     return HttpResponse(template.render())
 
+#search positive sentiment movies in our populated graph
 def getPositive(request):
     searchlist = []
     sentisearc = ['Positive']
@@ -33,6 +35,7 @@ def getPositive(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': searchlist})
 
+#search neutral sentiment movies in our populated graph
 def getNeutral(request):
     searchlist = []
     sentisearc = ['Neutral']
@@ -43,6 +46,7 @@ def getNeutral(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': searchlist})
 
+#search negative sentiment movies in our populated graph
 def getNegative(request):
     searchlist = []
     sentisearc = ['Negative']
@@ -53,6 +57,7 @@ def getNegative(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': searchlist})
 
+#search by anger emotion movies in our populated graph
 def getAnger(request):
     searchlist = ['Anger']
     sentisearc = []
@@ -62,6 +67,7 @@ def getAnger(request):
         sentisearc.append(str(ret))
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html' , {'Movies': sentisearc})
 
+#search by fear emotion movies in our populated graph
 def getFear(request):
     searchlist = ['Fear']
     sentisearc = []
@@ -72,6 +78,7 @@ def getFear(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': sentisearc})
 
+#search by antecipation emotion movies in our populated graph
 def getAnticipation(request):
     searchlist = ['Anticipation']
     sentisearc = []
@@ -82,6 +89,7 @@ def getAnticipation(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': sentisearc})
 
+#search by surprise emotion movies in our populated graph
 def getSurprise(request):
     searchlist = ['Surprise']
     sentisearc = []
@@ -92,6 +100,7 @@ def getSurprise(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': sentisearc})
 
+#search by joy emotion movies in our populated graph
 def getJoy(request):
     searchlist = ['Joy']
     sentisearc = []
@@ -102,6 +111,7 @@ def getJoy(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': sentisearc})
 
+#search by joy emotion movies in our populated graph
 def getSadness(request):
     searchlist = ['Sadness']
     sentisearc = []
@@ -112,6 +122,7 @@ def getSadness(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': sentisearc})
 
+#search by trust emotion movies in our populated graph
 def getTrust(request):
     searchlist = ['Trust']
     sentisearc = []
@@ -122,6 +133,7 @@ def getTrust(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': sentisearc})
 
+#search by disgust emotion movies in our populated graph
 def getDisgust(request):
     searchlist = ['Anger']
     sentisearc = []
@@ -132,10 +144,12 @@ def getDisgust(request):
     return render(request, 'C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showResults.html',
                   {'Movies': sentisearc})
 
+#render about page
 def getAbout(request):
     template = loader.get_template('C:/Users/Luis/PycharmProjects/WS/webproject/catalog/templates/showAbout.html')
     return HttpResponse(template.render())
 
+#search box action, uses function defined in DataProcessing.py
 def searchAction(request):
     if 'q' in request.GET:
         sentisearc = []
@@ -150,6 +164,7 @@ def searchAction(request):
     return HttpResponse(message)
 
 #--------------------------------------------------------------------
+#repeated function, necessary
 def movieInformation(movie_title):
 
     search = tmdb.Search()
